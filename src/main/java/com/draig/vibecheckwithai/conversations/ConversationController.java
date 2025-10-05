@@ -1,8 +1,13 @@
 package com.draig.vibecheckwithai.conversations;
 
 import com.draig.vibecheckwithai.profiles.ProfileRepository;
+import org.springframework.http.HttpStatus;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.server.ResponseStatusException;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.UUID;
 
@@ -25,6 +30,16 @@ public class ConversationController {
                 request.profileId(),
                 new ArrayList<>()
         );
+        conversationRepository.save(conversation);
+        return conversation;
+    }
+
+    @PostMapping("/conversations/{conversationId}")
+    public Conversation addMessageToConversation(@PathVariable String conversationId,@RequestBody ChatMessage message){
+        Conversation conversation = conversationRepository.findById(message.authorId())
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Conversation not found"));
+        ChatMessage messageWithTime = new ChatMessage(message.messageText(), message.authorId(), LocalDateTime.now());
+        conversation.messages().add(message);
         conversationRepository.save(conversation);
         return conversation;
     }
